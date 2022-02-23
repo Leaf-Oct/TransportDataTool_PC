@@ -9,6 +9,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -158,7 +159,7 @@ public class Main extends JFrame{
 		});
 	}
 	private void sendMessage(String s) {
-		byte[] b=s.getBytes();
+		byte[] b=s.getBytes(StandardCharsets.UTF_8);
 		DatagramPacket datagramPacket=new DatagramPacket(b, b.length, target, port);
 		try {
 			receive.send(datagramPacket);
@@ -189,7 +190,7 @@ public class Main extends JFrame{
 						break;
 					}
 					receiver.receive(pack);
-					String s=new String(pack.getData(),0,pack.getLength());
+					String s=new String(pack.getData(),0,pack.getLength(),"UTF-8");
 					textReceive.append(pack.getAddress().toString()+"\n"+s+"\n");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
