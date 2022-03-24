@@ -10,6 +10,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -159,12 +161,17 @@ public class Main extends JFrame{
 		});
 	}
 	private void sendMessage(String s) {
-		byte[] b=s.getBytes(StandardCharsets.UTF_8);
-		DatagramPacket datagramPacket=new DatagramPacket(b, b.length, target, port);
+		
 		try {
+			byte[] b=Security.encrypt(s);
+			DatagramPacket datagramPacket=new DatagramPacket(b, b.length, target, port);
 			receive.send(datagramPacket);
+			System.out.println(new String(b));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (GeneralSecurityException e) {
+			// TODO: handle exception
 			e.printStackTrace();
 		}
 		textReceive.append("/本机"+"\n"+s+"\n");
@@ -190,14 +197,29 @@ public class Main extends JFrame{
 						break;
 					}
 					receiver.receive(pack);
-					String s=new String(pack.getData(),0,pack.getLength(),"UTF-8");
-					textReceive.append(pack.getAddress().toString()+"\n"+s+"\n");
+					byte secret[]=Arrays.copyOf(b, pack.getLength());
+//					System.out.println(pack.getLength());
+//					System.out.println(secret.length);
+					System.out.println(new String(secret));
+					try {
+						textReceive.append(pack.getAddress().toString()+"\n"+Security.decrypt(secret)+"\n");
+					} catch (GeneralSecurityException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} catch (SocketException e) {
+					// TODO: handle exception
+					System.err.println("连接关闭");
+					
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
+				} 
 				
 			}
 		}
 	}
+
+
+
 }
